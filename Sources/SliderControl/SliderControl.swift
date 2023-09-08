@@ -1,6 +1,3 @@
-public struct SliderControl {
-    public private(set) var text = "Hello, World!"
+import UIKit
 
-    public init() {
-    }
-}
+
