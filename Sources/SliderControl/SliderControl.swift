@@ -5,7 +5,7 @@ public class SliderControl: UIControl {
     /// Indicates whether changes in the slider’s value generate continuous update events.
     public var isContinuous: Bool = true
 
-    /// The slider's current value.
+    /// The slider's current value. Ranges between `0.0` and `1.0`.
     public var value: Float {
         get {
             return Float(progressView.bounds.width / trackView.bounds.width)
@@ -17,17 +17,20 @@ public class SliderControl: UIControl {
         }
     }
 
+    private static let intrinsicHeight: CGFloat = 24
+    private static let defaultTrackHeight: CGFloat = 7
+    private static let highlightedTrackHeight: CGFloat = 12
+
     private let trackView: UIView = .init()
     private let progressView: UIView = .init()
 
     private var heightConstraint: NSLayoutConstraint = .init()
     private var progressConstraint: NSLayoutConstraint = .init()
-    private var internalValue: Float = 0.5
 
     // MARK: Overrides
 
     public override var intrinsicContentSize: CGSize {
-        return CGSize(width: UIView.noIntrinsicMetric, height: 24)
+        return CGSize(width: UIView.noIntrinsicMetric, height: Self.intrinsicHeight)
     }
 
     public override func layoutSubviews() {
@@ -52,16 +55,16 @@ public class SliderControl: UIControl {
 
     private func setup() {
         trackView.clipsToBounds = true
-        trackView.backgroundColor = .quaternarySystemFill // .systemSecondaryFill
+        trackView.backgroundColor = .secondarySystemFill
         trackView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(trackView)
 
         progressView.clipsToBounds = true
-        progressView.backgroundColor = .tertiarySystemFill // .systemFill // .tertiaryFill
+        progressView.backgroundColor = .systemFill
         progressView.translatesAutoresizingMaskIntoConstraints = false
         trackView.addSubview(progressView)
 
-        heightConstraint = trackView.heightAnchor.constraint(equalToConstant: 7)
+        heightConstraint = trackView.heightAnchor.constraint(equalToConstant: Self.defaultTrackHeight)
         progressConstraint = progressView.widthAnchor.constraint(equalTo: trackView.widthAnchor, multiplier: 0.5)
 
         NSLayoutConstraint.activate([
@@ -82,7 +85,7 @@ public class SliderControl: UIControl {
     override public func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesBegan(touches, with: event)
 
-        heightConstraint.constant = 12
+        heightConstraint.constant = Self.highlightedTrackHeight
         setNeedsLayout()
 
         UIView.animate(
@@ -92,8 +95,6 @@ public class SliderControl: UIControl {
             initialSpringVelocity: 0,
             options: [.curveEaseIn, .allowAnimatedContent, .allowUserInteraction]
         ) { [unowned self] in
-            trackView.backgroundColor = .secondarySystemFill
-            progressView.backgroundColor = .systemFill
             layoutIfNeeded()
         }
     }
@@ -129,8 +130,6 @@ public class SliderControl: UIControl {
             initialSpringVelocity: 1,
             options: [.curveEaseOut, .allowAnimatedContent, .allowUserInteraction]
         ) { [unowned self] in
-            trackView.backgroundColor = .quaternarySystemFill
-            progressView.backgroundColor = .tertiarySystemFill
             layoutIfNeeded()
         }
 
