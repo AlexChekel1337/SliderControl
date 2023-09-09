@@ -6,6 +6,18 @@ public class SliderControl: UIControl {
     public var isContinuous: Bool = true
     /// A layout guide that follows track size changes in different states.
     public let trackLayoutGuide: UILayoutGuide = .init()
+    /// A color set to track when user is not interacting with the slider.
+    public var defaultTrackColor: UIColor = .secondarySystemFill
+    /// A color set to progress when user is not interacting with the slider.
+    public var defaultProgressColor: UIColor = .systemFill
+    /// A color set to track when user is interacting with the slider.
+    /// Assigning `nil` to this property disables color changes in interactive state.
+    /// Default value of this property is `nil`.
+    public var enlargedTrackColor: UIColor?
+    /// A color set to progress when user is interacting with the slider.
+    /// Assigning `nil` to this property disables color changes in interactive state.
+    /// Default value of this property is `nil`.
+    public var enlargedProgressColor: UIColor?
 
     /// The slider's current value. Ranges between `0.0` and `1.0`.
     public var value: Float {
@@ -95,14 +107,14 @@ public class SliderControl: UIControl {
         backgroundColor = .clear
 
         trackView.clipsToBounds = true
-        trackView.backgroundColor = .secondarySystemFill
+        trackView.backgroundColor = defaultTrackColor
         trackView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(trackView)
 
         addLayoutGuide(trackLayoutGuide)
 
         progressView.clipsToBounds = true
-        progressView.backgroundColor = .systemFill
+        progressView.backgroundColor = defaultProgressColor
         progressView.translatesAutoresizingMaskIntoConstraints = false
         trackView.addSubview(progressView)
 
@@ -138,6 +150,9 @@ public class SliderControl: UIControl {
             initialSpringVelocity: 0,
             options: [.curveEaseIn, .allowAnimatedContent, .allowUserInteraction]
         ) { [unowned self] in
+            enlargedTrackColor.map { trackView.backgroundColor = $0 }
+            enlargedProgressColor.map { progressView.backgroundColor = $0 }
+
             layoutIfNeeded()
         }
     }
@@ -153,6 +168,9 @@ public class SliderControl: UIControl {
             initialSpringVelocity: 1,
             options: [.curveEaseOut, .allowAnimatedContent, .allowUserInteraction]
         ) { [unowned self] in
+            trackView.backgroundColor = defaultTrackColor
+            progressView.backgroundColor = defaultProgressColor
+
             layoutIfNeeded()
         }
     }
