@@ -2,7 +2,7 @@ import UIKit
 
 /// Implements a slider control similar to one found in Apple Music on iOS 16.
 public class SliderControl: UIControl {
-    /// Indicates whether changes in the slider’s value generate continuous update events.
+    /// Indicates whether changes in the slider's value generate continuous update events.
     public var isContinuous: Bool = true
 
     /// The slider's current value. Ranges between `0.0` and `1.0`.
@@ -17,29 +17,19 @@ public class SliderControl: UIControl {
         }
     }
 
+    public override var intrinsicContentSize: CGSize {
+        return CGSize(width: UIView.noIntrinsicMetric, height: Self.intrinsicHeight)
+    }
+
     private static let intrinsicHeight: CGFloat = 24
     private static let defaultTrackHeight: CGFloat = 7
-    private static let highlightedTrackHeight: CGFloat = 12
+    private static let enlargedTrackHeight: CGFloat = 12
 
     private let trackView: UIView = .init()
     private let progressView: UIView = .init()
 
     private var heightConstraint: NSLayoutConstraint = .init()
     private var progressConstraint: NSLayoutConstraint = .init()
-
-    // MARK: Overrides
-
-    public override var intrinsicContentSize: CGSize {
-        return CGSize(width: UIView.noIntrinsicMetric, height: Self.intrinsicHeight)
-    }
-
-    public override func layoutSubviews() {
-        super.layoutSubviews()
-
-        trackView.layer.cornerRadius = trackView.bounds.height / 2
-    }
-
-    // MARK: Initialization & setup
 
     override public init(frame: CGRect) {
         super.init(frame: frame)
@@ -53,7 +43,55 @@ public class SliderControl: UIControl {
         setup()
     }
 
+    public override func layoutSubviews() {
+        super.layoutSubviews()
+
+        trackView.layer.cornerRadius = trackView.bounds.height / 2
+    }
+
+    override public func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesBegan(touches, with: event)
+
+        enlargeTrack()
+    }
+
+    public override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesMoved(touches, with: event)
+
+        if let touch = touches.first {
+            let previousLocation = touch.previousLocation(in: self)
+            let location = touch.location(in: self)
+            let translationX = location.x - previousLocation.x
+
+            let newWidth = progressView.bounds.width + translationX
+            let newProgress = max(0.0001, min(1, newWidth / trackView.bounds.width))
+            progressConstraint = progressConstraint.constraintWithMultiplier(newProgress)
+
+            if isContinuous {
+                sendActions(for: .valueChanged)
+            }
+        }
+    }
+
+    override public func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesEnded(touches, with: event)
+
+        reduceTrack()
+
+        if !isContinuous {
+            sendActions(for: .valueChanged)
+        }
+    }
+
+    public override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesCancelled(touches, with: event)
+
+        reduceTrack()
+    }
+
     private func setup() {
+        backgroundColor = .clear
+
         trackView.clipsToBounds = true
         trackView.backgroundColor = .secondarySystemFill
         trackView.translatesAutoresizingMaskIntoConstraints = false
@@ -80,12 +118,8 @@ public class SliderControl: UIControl {
         ])
     }
 
-    // MARK: Event handling
-
-    override public func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        super.touchesBegan(touches, with: event)
-
-        heightConstraint.constant = Self.highlightedTrackHeight
+    private func enlargeTrack() {
+        heightConstraint.constant = Self.enlargedTrackHeight
         setNeedsLayout()
 
         UIView.animate(
@@ -99,27 +133,7 @@ public class SliderControl: UIControl {
         }
     }
 
-    public override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        super.touchesMoved(touches, with: event)
-
-        if let touch = touches.first {
-            let previousLocation = touch.previousLocation(in: self)
-            let location = touch.location(in: self)
-            let translationX = location.x - previousLocation.x
-
-            let newWidth = progressView.bounds.width + translationX
-            let newProgress = max(0.0001, min(1, newWidth / trackView.bounds.width))
-            progressConstraint = progressConstraint.constraintWithMultiplier(newProgress)
-
-            if isContinuous {
-                sendActions(for: .valueChanged)
-            }
-        }
-    }
-
-    override public func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        super.touchesEnded(touches, with: event)
-
+    private func reduceTrack() {
         heightConstraint.constant = 7
         setNeedsLayout()
 
@@ -132,13 +146,5 @@ public class SliderControl: UIControl {
         ) { [unowned self] in
             layoutIfNeeded()
         }
-
-        if !isContinuous {
-            sendActions(for: .valueChanged)
-        }
-    }
-
-    public override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        super.touchesCancelled(touches, with: event)
     }
 }
