@@ -4,6 +4,8 @@ import UIKit
 public class SliderControl: UIControl {
     /// Indicates whether changes in the slider's value generate continuous update events.
     public var isContinuous: Bool = true
+    /// A layout guide that follows track size changes in different states.
+    public let trackLayoutGuide: UILayoutGuide = .init()
 
     /// The slider's current value. Ranges between `0.0` and `1.0`.
     public var value: Float {
@@ -97,6 +99,8 @@ public class SliderControl: UIControl {
         trackView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(trackView)
 
+        addLayoutGuide(trackLayoutGuide)
+
         progressView.clipsToBounds = true
         progressView.backgroundColor = .systemFill
         progressView.translatesAutoresizingMaskIntoConstraints = false
@@ -110,6 +114,11 @@ public class SliderControl: UIControl {
             trackView.centerYAnchor.constraint(equalTo: centerYAnchor),
             trackView.leadingAnchor.constraint(equalTo: leadingAnchor),
             trackView.trailingAnchor.constraint(equalTo: trailingAnchor),
+
+            trackLayoutGuide.topAnchor.constraint(equalTo: trackView.topAnchor),
+            trackLayoutGuide.leadingAnchor.constraint(equalTo: trackView.leadingAnchor),
+            trackView.bottomAnchor.constraint(equalTo: trackLayoutGuide.bottomAnchor),
+            trackView.trailingAnchor.constraint(equalTo: trackLayoutGuide.trailingAnchor),
 
             progressConstraint,
             progressView.topAnchor.constraint(equalTo: trackView.topAnchor),
