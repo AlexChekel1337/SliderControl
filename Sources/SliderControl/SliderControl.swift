@@ -44,6 +44,7 @@ public class SliderControl: UIControl {
 
     private var heightConstraint: NSLayoutConstraint = .init()
     private var progressConstraint: NSLayoutConstraint = .init()
+    private var hasPreviousSessionChangedProgress: Bool = false
 
     override public init(frame: CGRect) {
         super.init(frame: frame)
@@ -81,6 +82,8 @@ public class SliderControl: UIControl {
             let newProgress = max(0.0001, min(1, newWidth / trackView.bounds.width))
             progressConstraint = progressConstraint.constraintWithMultiplier(newProgress)
 
+            hasPreviousSessionChangedProgress = true
+
             if isContinuous {
                 sendActions(for: .valueChanged)
             }
@@ -92,7 +95,8 @@ public class SliderControl: UIControl {
 
         reduceTrack()
 
-        if !isContinuous {
+        if hasPreviousSessionChangedProgress {
+            hasPreviousSessionChangedProgress = false
             sendActions(for: .valueChanged)
         }
     }
@@ -101,9 +105,15 @@ public class SliderControl: UIControl {
         super.touchesCancelled(touches, with: event)
 
         reduceTrack()
+
+        if hasPreviousSessionChangedProgress {
+            hasPreviousSessionChangedProgress = false
+            sendActions(for: .valueChanged)
+        }
     }
 
     private func setup() {
+        isMultipleTouchEnabled = false
         backgroundColor = .clear
 
         trackView.clipsToBounds = true
