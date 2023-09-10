@@ -1,3 +1,10 @@
+//
+// SliderControl.swift
+// SliderControl
+//
+// Created by Alexander Chekel on 09.09.2023.
+//
+
 import UIKit
 
 /// Implements a slider control similar to one found in Apple Music on iOS 16.
