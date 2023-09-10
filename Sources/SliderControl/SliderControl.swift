@@ -1,7 +1,7 @@
 import UIKit
 
 /// Implements a slider control similar to one found in Apple Music on iOS 16.
-public class SliderControl: UIControl {
+open class SliderControl: UIControl {
     /// Indicates whether changes in the slider's value generate continuous update events.
     /// Default value of this property is `true`.
     public var isContinuous: Bool = true
@@ -9,24 +9,24 @@ public class SliderControl: UIControl {
     public let trackLayoutGuide: UILayoutGuide = .init()
     /// A color set to track when user is not interacting with the slider.
     /// Default value of this property is `secondarySystemFill`.
-    public var defaultTrackColor: UIColor = .secondarySystemFill
+    open var defaultTrackColor: UIColor = .secondarySystemFill
     /// A color set to progress when user is not interacting with the slider.
     /// Default value of this property is `.systemFill`.
-    public var defaultProgressColor: UIColor = .systemFill
+    open var defaultProgressColor: UIColor = .systemFill
     /// A color set to track when user is interacting with the slider.
     /// Assigning `nil` to this property disables color changes in interactive state.
     /// Default value of this property is `nil`.
-    public var enlargedTrackColor: UIColor?
+    open var enlargedTrackColor: UIColor?
     /// A color set to progress when user is interacting with the slider.
     /// Assigning `nil` to this property disables color changes in interactive state.
     /// Default value of this property is `nil`.
-    public var enlargedProgressColor: UIColor?
+    open var enlargedProgressColor: UIColor?
     /// Indicates whether slider should provide haptic feedback upon reaching minimum or maximum values.
     /// Default value of this property is `true`.
-    public var providesHapticFeedback: Bool = true
+    open var providesHapticFeedback: Bool = true
     /// Feedback generator used to provide haptic feedback when slider reaches minimum or maximum value.
     /// Default value of this property is `UIImpactFeedbackGenerator(style: .light)`.
-    public private(set) var feedbackGenerator: UIFeedbackGenerator = UIImpactFeedbackGenerator(style: .light)
+    open private(set) var feedbackGenerator: UIFeedbackGenerator = UIImpactFeedbackGenerator(style: .light)
 
     /// The slider's current value. Ranges between `0.0` and `1.0`.
     public var value: Float {
@@ -61,7 +61,7 @@ public class SliderControl: UIControl {
         setup()
     }
 
-    required init?(coder: NSCoder) {
+    required public init?(coder: NSCoder) {
         super.init(coder: coder)
 
         setup()
@@ -174,7 +174,7 @@ public class SliderControl: UIControl {
     /// implementation to customize haptic feedback. Your implementation should
     /// not call `super.provideHapticFeedbackForMinimumValue()` at any point.
     /// You should not call this method directly.
-    public func provideHapticFeedbackForMinimumValue() {
+    open func provideHapticFeedbackForMinimumValue() {
         guard providesHapticFeedback else { return }
 
         (feedbackGenerator as? UIImpactFeedbackGenerator)?.impactOccurred(intensity: 0.75)
@@ -184,7 +184,7 @@ public class SliderControl: UIControl {
     /// implementation to customize haptic feedback. Your implementation should
     /// not call `super.provideHapticFeedbackForMaximumValue()` at any point.
     /// You should not call this method directly.
-    public func provideHapticFeedbackForMaximumValue() {
+    open func provideHapticFeedbackForMaximumValue() {
         guard providesHapticFeedback else { return }
 
         (feedbackGenerator as? UIImpactFeedbackGenerator)?.impactOccurred(intensity: 1)
