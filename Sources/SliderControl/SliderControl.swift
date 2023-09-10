@@ -7,26 +7,43 @@ open class SliderControl: UIControl {
     public var isContinuous: Bool = true
     /// A layout guide that follows track size changes in different states.
     public let trackLayoutGuide: UILayoutGuide = .init()
-    /// A color set to track when user is not interacting with the slider.
-    /// Default value of this property is `secondarySystemFill`.
-    open var defaultTrackColor: UIColor = .secondarySystemFill
-    /// A color set to progress when user is not interacting with the slider.
-    /// Default value of this property is `.systemFill`.
-    open var defaultProgressColor: UIColor = .systemFill
-    /// A color set to track when user is interacting with the slider.
-    /// Assigning `nil` to this property disables color changes in interactive state.
-    /// Default value of this property is `nil`.
-    open var enlargedTrackColor: UIColor?
-    /// A color set to progress when user is interacting with the slider.
-    /// Assigning `nil` to this property disables color changes in interactive state.
-    /// Default value of this property is `nil`.
-    open var enlargedProgressColor: UIColor?
     /// Indicates whether slider should provide haptic feedback upon reaching minimum or maximum values.
     /// Default value of this property is `true`.
     open var providesHapticFeedback: Bool = true
     /// Feedback generator used to provide haptic feedback when slider reaches minimum or maximum value.
     /// Default value of this property is `UIImpactFeedbackGenerator(style: .light)`.
     open private(set) var feedbackGenerator: UIFeedbackGenerator = UIImpactFeedbackGenerator(style: .light)
+
+    /// A color set to track when user is not interacting with the slider.
+    /// Default value of this property is `secondarySystemFill`.
+    open var defaultTrackColor: UIColor = .secondarySystemFill {
+        didSet {
+            updateColors()
+        }
+    }
+    /// A color set to progress when user is not interacting with the slider.
+    /// Default value of this property is `.systemFill`.
+    open var defaultProgressColor: UIColor = .systemFill {
+        didSet {
+            updateColors()
+        }
+    }
+    /// A color set to track when user is interacting with the slider.
+    /// Assigning `nil` to this property disables color changes in interactive state.
+    /// Default value of this property is `nil`.
+    open var enlargedTrackColor: UIColor? {
+        didSet {
+            updateColors()
+        }
+    }
+    /// A color set to progress when user is interacting with the slider.
+    /// Assigning `nil` to this property disables color changes in interactive state.
+    /// Default value of this property is `nil`.
+    open var enlargedProgressColor: UIColor? {
+        didSet {
+            updateColors()
+        }
+    }
 
     /// The slider's current value. Ranges between `0.0` and `1.0`.
     public var value: Float {
@@ -223,6 +240,16 @@ open class SliderControl: UIControl {
             progressView.backgroundColor = defaultProgressColor
 
             layoutIfNeeded()
+        }
+    }
+
+    private func updateColors() {
+        if heightConstraint.constant == Self.defaultTrackHeight {
+            trackView.backgroundColor = defaultTrackColor
+            progressView.backgroundColor = defaultProgressColor
+        } else {
+            enlargedTrackColor.map { trackView.backgroundColor = $0 }
+            enlargedProgressColor.map { progressView.backgroundColor = $0 }
         }
     }
 }
