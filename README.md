@@ -30,3 +30,31 @@ sliderControl.defaultProgressColor = .tertiarySystemFill
 sliderControl.enlargedTrackColor = .secondarySystemFill
 sliderControl.enlargedProgressColor = .systemFill
 ```
+
+By default `SliderControl` provides haptic feedback when value reaches lower and upper bounds. This behavior can be changed by setting `providesHapticFeedback` property to `false`. Types of haptic feedback can also be changed by subclassing `SliderControl`:
+```swift
+class MySliderControl: SliderControl {
+    override var feedbackGenerator: UIFeedbackGenerator {
+        return UINotificationFeedbackGenerator()
+    }
+
+    override func provideHapticFeedbackForMinimumValue() {
+        (feedbackGenerator as? UINotificationFeedbackGenerator)?.notificationOccurred(.error)
+    }
+
+    override func provideHapticFeedbackForMaximumValue() {
+        (feedbackGenerator as? UINotificationFeedbackGenerator)?.notificationOccurred(.success)
+    }
+}
+```
+
+## RTL Support
+
+`SliderControl` supports right-to-left languages.
+
+![RTL Example](./Media/rtl.gif)
+
+## Requirements
+
+- iOS 13+
+- Swift 5.8
