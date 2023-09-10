@@ -3,12 +3,15 @@ import UIKit
 /// Implements a slider control similar to one found in Apple Music on iOS 16.
 public class SliderControl: UIControl {
     /// Indicates whether changes in the slider's value generate continuous update events.
+    /// Default value of this property is `true`.
     public var isContinuous: Bool = true
     /// A layout guide that follows track size changes in different states.
     public let trackLayoutGuide: UILayoutGuide = .init()
     /// A color set to track when user is not interacting with the slider.
+    /// Default value of this property is `secondarySystemFill`.
     public var defaultTrackColor: UIColor = .secondarySystemFill
     /// A color set to progress when user is not interacting with the slider.
+    /// Default value of this property is `.systemFill`.
     public var defaultProgressColor: UIColor = .systemFill
     /// A color set to track when user is interacting with the slider.
     /// Assigning `nil` to this property disables color changes in interactive state.
@@ -18,6 +21,12 @@ public class SliderControl: UIControl {
     /// Assigning `nil` to this property disables color changes in interactive state.
     /// Default value of this property is `nil`.
     public var enlargedProgressColor: UIColor?
+    /// Indicates whether slider should provide haptic feedback upon reaching minimum or maximum values.
+    /// Default value of this property is `true`.
+    public var providesHapticFeedback: Bool = true
+    /// Feedback generator used to provide haptic feedback when slider reaches minimum or maximum value.
+    /// Default value of this property is `UIImpactFeedbackGenerator(style: .light)`.
+    public private(set) var feedbackGenerator: UIFeedbackGenerator = UIImpactFeedbackGenerator(style: .light)
 
     /// The slider's current value. Ranges between `0.0` and `1.0`.
     public var value: Float {
@@ -25,7 +34,7 @@ public class SliderControl: UIControl {
             return Float(progressView.bounds.width / trackView.bounds.width)
         }
         set {
-            let normalizedValue = max(0, min(1, newValue))
+            let normalizedValue = max(0.0001, min(1, newValue))
             let cgFloatValue = CGFloat(normalizedValue)
             progressConstraint = progressConstraint.constraintWithMultiplier(cgFloatValue)
         }
@@ -78,12 +87,24 @@ public class SliderControl: UIControl {
             let location = touch.location(in: self)
             let translationX = location.x - previousLocation.x
 
-            let newWidth = progressView.bounds.width + translationX
-            let newProgress = max(0.0001, min(1, newWidth / trackView.bounds.width))
-            progressConstraint = progressConstraint.constraintWithMultiplier(newProgress)
+            let progress = progressView.bounds.width / trackView.bounds.width
+            let newProgress = max(0, min(1, (progressView.bounds.width + translationX) / trackView.bounds.width))
+
+            if newProgress != progress {
+                switch newProgress {
+                    case 0:
+                        provideHapticFeedbackForMinimumValue()
+                    case 1:
+                        provideHapticFeedbackForMaximumValue()
+                    default:
+                        break
+                }
+            }
+
+            let normalizedConstraintMultiplier = max(0.0001, min(1, newProgress))
+            progressConstraint = progressConstraint.constraintWithMultiplier(normalizedConstraintMultiplier)
 
             hasPreviousSessionChangedProgress = true
-
             if isContinuous {
                 sendActions(for: .valueChanged)
             }
@@ -147,6 +168,26 @@ public class SliderControl: UIControl {
             progressView.leadingAnchor.constraint(equalTo: trackView.leadingAnchor),
             progressView.bottomAnchor.constraint(equalTo: trackView.bottomAnchor)
         ])
+    }
+
+    /// The control calls this method upon reaching minimum value. Override this
+    /// implementation to customize haptic feedback. Your implementation should
+    /// not call `super.provideHapticFeedbackForMinimumValue()` at any point.
+    /// You should not call this method directly.
+    public func provideHapticFeedbackForMinimumValue() {
+        guard providesHapticFeedback else { return }
+
+        (feedbackGenerator as? UIImpactFeedbackGenerator)?.impactOccurred(intensity: 0.75)
+    }
+
+    /// The control calls this method upon reaching maximum value. Override this
+    /// implementation to customize haptic feedback. Your implementation should
+    /// not call `super.provideHapticFeedbackForMaximumValue()` at any point.
+    /// You should not call this method directly.
+    public func provideHapticFeedbackForMaximumValue() {
+        guard providesHapticFeedback else { return }
+
+        (feedbackGenerator as? UIImpactFeedbackGenerator)?.impactOccurred(intensity: 1)
     }
 
     private func enlargeTrack() {
