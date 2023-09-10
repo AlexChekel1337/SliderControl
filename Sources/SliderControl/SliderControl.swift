@@ -103,9 +103,12 @@ open class SliderControl: UIControl {
             let previousLocation = touch.previousLocation(in: self)
             let location = touch.location(in: self)
             let translationX = location.x - previousLocation.x
+            let newWidth = effectiveUserInterfaceLayoutDirection == .leftToRight
+                ? progressView.bounds.width + translationX
+                : progressView.bounds.width - translationX
 
             let progress = progressView.bounds.width / trackView.bounds.width
-            let newProgress = max(0, min(1, (progressView.bounds.width + translationX) / trackView.bounds.width))
+            let newProgress = max(0, min(1, newWidth / trackView.bounds.width))
 
             if newProgress != progress {
                 switch newProgress {
