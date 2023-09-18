@@ -56,11 +56,6 @@ class MySliderControl: SliderControl {
 
 ![RTL Example](./Media/rtl.gif)
 
-## Requirements
-
-- iOS 13+
-- Swift 5.8
-
 [Platform badge]: https://img.shields.io/badge/Platform-iOS-green
 [OS badge]: https://img.shields.io/badge/iOS-13.0+-green
 [SPM badge]: https://img.shields.io/badge/SPM-Compatible-green
