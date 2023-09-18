@@ -3,6 +3,7 @@
 // SliderControl
 //
 // Created by Alexander Chekel on 09.09.2023.
+// Copyright © 2023 Alexander Chekel. All rights reserved.
 //
 
 import UIKit
