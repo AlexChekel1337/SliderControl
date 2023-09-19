@@ -14,6 +14,14 @@ SliderControl is a small Swift Package aiming to recreate volume and track slide
 sliderControl.addTarget(self, action: #selector(sliderValueChanged), for: .valueChanged)
 ```
 
+Alternatively, you can subscribe to `valuePublisher` publisher to receive value updates:
+
+```swift
+sliderCancellable = sliderControl.valuePublisher.sink { value in
+    ...
+}
+```
+
 ## Customization
 
 There are a few properties to customize `SliderControl`'s appearance:
