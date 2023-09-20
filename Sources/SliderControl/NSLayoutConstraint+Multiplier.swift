@@ -15,8 +15,6 @@ extension NSLayoutConstraint {
             NSLayoutConstraint.deactivate([self])
         }
 
-        NSLayoutConstraint.deactivate([self])
-
         let updatedConstraint = NSLayoutConstraint(
             item: firstItem as Any,
             attribute: firstAttribute,
