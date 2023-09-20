@@ -1,5 +1,7 @@
 # SliderControl
 
+![Platform badge] ![OS badge] ![SPM badge] ![Swift badge]
+
 SliderControl is a small Swift Package aiming to recreate volume and track sliders found in Apple Music on iOS 16 and later.
 
 ![Default configuration](./Media/default.gif)
@@ -10,6 +12,14 @@ SliderControl is a small Swift Package aiming to recreate volume and track slide
 
 ```swift
 sliderControl.addTarget(self, action: #selector(sliderValueChanged), for: .valueChanged)
+```
+
+Alternatively, you can subscribe to `valuePublisher` publisher to receive value updates:
+
+```swift
+sliderCancellable = sliderControl.valuePublisher.sink { value in
+    ...
+}
 ```
 
 ## Customization
@@ -54,7 +64,7 @@ class MySliderControl: SliderControl {
 
 ![RTL Example](./Media/rtl.gif)
 
-## Requirements
-
-- iOS 13+
-- Swift 5.8
+[Platform badge]: https://img.shields.io/badge/Platform-iOS-green
+[OS badge]: https://img.shields.io/badge/iOS-13.0+-green
+[SPM badge]: https://img.shields.io/badge/SPM-Compatible-green
+[Swift badge]: https://img.shields.io/badge/Swift-5.8-orange

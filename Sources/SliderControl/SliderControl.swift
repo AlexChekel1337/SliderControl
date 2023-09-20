@@ -3,6 +3,7 @@
 // SliderControl
 //
 // Created by Alexander Chekel on 09.09.2023.
+// Copyright © 2023 Alexander Chekel. All rights reserved.
 //
 
 import UIKit
@@ -63,6 +64,10 @@ open class SliderControl: UIControl {
             progressConstraint = progressConstraint.constraintWithMultiplier(cgFloatValue)
         }
     }
+
+    /// A publisher that emits progress updates when user interacts with the slider.
+    /// A Combine alternative to adding action for `UIControl.Event.valueChanged`.
+    public private(set) lazy var valuePublisher: SliderControlValuePublisher = .init(control: self)
 
     public override var intrinsicContentSize: CGSize {
         return CGSize(width: UIView.noIntrinsicMetric, height: Self.intrinsicHeight)
