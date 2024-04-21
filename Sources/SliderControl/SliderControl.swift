@@ -241,7 +241,7 @@ open class SliderControl: UIControl {
     }
 
     private func reduceTrack() {
-        heightConstraint.constant = 7
+        heightConstraint.constant = Self.defaultTrackHeight
         setNeedsLayout()
 
         UIView.animate(
