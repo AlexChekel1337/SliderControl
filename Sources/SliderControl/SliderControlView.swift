@@ -25,7 +25,7 @@ public struct SliderControlView: UIViewRepresentable {
 
     @Binding var value: Float
 
-    var providesHapticFeedback: Bool
+    var feedbackGenerator: (any SliderFeedbackGenerator)?
     var defaultTrackColor: UIColor
     var defaultProgressColor: UIColor
     var enlargedTrackColor: UIColor?
@@ -38,7 +38,7 @@ public struct SliderControlView: UIViewRepresentable {
     ///                               upon reaching minimum or maximum values.
     public init(value: Binding<Float>, providesHapticFeedback: Bool = true) {
         self._value = value
-        self.providesHapticFeedback = providesHapticFeedback
+        self.feedbackGenerator = ImpactSliderFeedbackGenerator()
         self.defaultTrackColor = .secondarySystemFill
         self.defaultProgressColor = .systemFill
         self.enlargedTrackColor = nil
@@ -48,7 +48,7 @@ public struct SliderControlView: UIViewRepresentable {
     public func makeUIView(context: Context) -> SliderControl {
         let coordinator = context.coordinator
         let control = SliderControl()
-        control.providesHapticFeedback = providesHapticFeedback
+        control.feedbackGenerator = feedbackGenerator
         control.defaultTrackColor = defaultTrackColor
         control.defaultProgressColor = defaultProgressColor
         control.enlargedTrackColor = enlargedTrackColor
@@ -70,7 +70,7 @@ public struct SliderControlView: UIViewRepresentable {
             uiView.value = value
         }
 
-        uiView.providesHapticFeedback = providesHapticFeedback
+        uiView.feedbackGenerator = feedbackGenerator
         uiView.defaultTrackColor = defaultTrackColor
         uiView.defaultProgressColor = defaultProgressColor
         uiView.enlargedTrackColor = enlargedTrackColor
@@ -134,6 +134,13 @@ public extension SliderControlView {
         var view = self
         view.defaultProgressColor = UIColor(defaultProgressColor)
         view.enlargedProgressColor = enlargedProgressColor.map(UIColor.init)
+        return view
+    }
+
+    /// Sets slider's feedback generator. Pass `nil` to disable haptic feedback.
+    func feedbackGenerator(_ generator: (any SliderFeedbackGenerator)?) -> SliderControlView {
+        var view = self
+        view.feedbackGenerator = generator
         return view
     }
 }
