@@ -25,17 +25,34 @@ public struct SliderControlView: UIViewRepresentable {
 
     @Binding var value: Float
 
-    private let providesHapticFeedback: Bool
+    var providesHapticFeedback: Bool
+    var defaultTrackColor: UIColor
+    var defaultProgressColor: UIColor
+    var enlargedTrackColor: UIColor?
+    var enlargedProgressColor: UIColor?
 
+    /// Creates a slider similar to the track slider found in Apple Music on iOS 16.
+    /// - parameters:
+    ///     - value: Selected slider value binding.
+    ///     - providesHapticFeedback: Determines whether `SliderControlView` should provide haptic feedback
+    ///                               upon reaching minimum or maximum values.
     public init(value: Binding<Float>, providesHapticFeedback: Bool = true) {
         self._value = value
         self.providesHapticFeedback = providesHapticFeedback
+        self.defaultTrackColor = .secondarySystemFill
+        self.defaultProgressColor = .systemFill
+        self.enlargedTrackColor = nil
+        self.enlargedProgressColor = nil
     }
 
     public func makeUIView(context: Context) -> SliderControl {
         let coordinator = context.coordinator
         let control = SliderControl()
         control.providesHapticFeedback = providesHapticFeedback
+        control.defaultTrackColor = defaultTrackColor
+        control.defaultProgressColor = defaultProgressColor
+        control.enlargedTrackColor = enlargedTrackColor
+        control.enlargedProgressColor = enlargedProgressColor
         control.addTarget(coordinator, action: #selector(Coordinator.handleValueChange(control:)), for: .valueChanged)
         return control
     }
@@ -52,5 +69,71 @@ public struct SliderControlView: UIViewRepresentable {
             // a drawing issue.
             uiView.value = value
         }
+
+        uiView.providesHapticFeedback = providesHapticFeedback
+        uiView.defaultTrackColor = defaultTrackColor
+        uiView.defaultProgressColor = defaultProgressColor
+        uiView.enlargedTrackColor = enlargedTrackColor
+        uiView.enlargedProgressColor = enlargedProgressColor
+    }
+}
+
+public extension SliderControlView {
+    /// Sets track colors.
+    /// - parameters:
+    ///     - defaultTrackColorName: A name of asset color for the track.
+    ///     - enlargedTrackColorName: A name of asset color for the track in interaction state.
+    @available(iOS, deprecated: 14, message: "Use .trackColor(_:enlargedTrackColor:) modifier instead.")
+    func trackColor(
+        named defaultTrackColorName: String,
+        enlargedTrackColorNamed enlargedTrackColorName: String? = nil
+    ) -> SliderControlView {
+        var view = self
+        if let defaultTrackColor = UIColor(named: defaultTrackColorName) {
+            view.defaultTrackColor = defaultTrackColor
+        }
+        view.enlargedTrackColor = enlargedTrackColorName.flatMap(UIColor.init(named:))
+        return view
+    }
+
+    /// Sets track colors.
+    /// - parameters:
+    ///     - defaultTrackColor: A color for the track.
+    ///     - enlargedTrackColor: A color for the track in interaction state.
+    @available(iOS 14, *)
+    func trackColor(_ defaultTrackColor: Color, enlarged enlargedTrackColor: Color? = nil) -> SliderControlView {
+        var view = self
+        view.defaultTrackColor = UIColor(defaultTrackColor)
+        view.enlargedTrackColor = enlargedTrackColor.map(UIColor.init)
+        return view
+    }
+
+    /// Sets progress fill colors.
+    /// - parameters:
+    ///     - defaultProgressColorName: A name of asset color for the progress fill.
+    ///     - enlargedProgressColorName: A name of asset color for the progress fill in interaction state.
+    @available(iOS, deprecated: 14, message: "Use .progressColor(_:enlargedProgressColor:) modifier instead.")
+    func progressColor(
+        named defaultProgressColorName: String,
+        enlargedProgressColorNamed enlargedProgressColorName: String? = nil
+    ) -> SliderControlView {
+        var view = self
+        if let defaultProgressColor = UIColor(named: defaultProgressColorName) {
+            view.defaultProgressColor = defaultProgressColor
+        }
+        view.enlargedProgressColor = enlargedProgressColorName.flatMap(UIColor.init(named:))
+        return view
+    }
+
+    /// Sets progress fill colors.
+    /// - parameters:
+    ///     - defaultProgressColor: A color for the progress fill.
+    ///     - enlargedProgressColor: A color for the progress fill in interaction state.
+    @available(iOS 14, *)
+    func progressColor(_ defaultProgressColor: Color, enlarged enlargedProgressColor: Color? = nil) -> SliderControlView {
+        var view = self
+        view.defaultProgressColor = UIColor(defaultProgressColor)
+        view.enlargedProgressColor = enlargedProgressColor.map(UIColor.init)
+        return view
     }
 }
