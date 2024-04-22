@@ -25,13 +25,17 @@ public struct SliderControlView: UIViewRepresentable {
 
     @Binding var value: Float
 
-    public init(value: Binding<Float>) {
-        _value = value
+    private let providesHapticFeedback: Bool
+
+    public init(value: Binding<Float>, providesHapticFeedback: Bool = true) {
+        self._value = value
+        self.providesHapticFeedback = providesHapticFeedback
     }
 
     public func makeUIView(context: Context) -> SliderControl {
         let coordinator = context.coordinator
         let control = SliderControl()
+        control.providesHapticFeedback = providesHapticFeedback
         control.addTarget(coordinator, action: #selector(Coordinator.handleValueChange(control:)), for: .valueChanged)
         return control
     }
@@ -42,6 +46,10 @@ public struct SliderControlView: UIViewRepresentable {
 
     public func updateUIView(_ uiView: SliderControl, context: Context) {
         if value != uiView.value {
+            // When the UIView updates the binding, SwiftUI calls the
+            // updateUIView(_:context:) method again, which may cause
+            // a CPU usage spike, or, as in case of this view,
+            // a drawing issue.
             uiView.value = value
         }
     }
