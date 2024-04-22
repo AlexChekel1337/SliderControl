@@ -54,6 +54,7 @@ public struct SliderControlView: UIViewRepresentable {
         control.enlargedTrackColor = enlargedTrackColor
         control.enlargedProgressColor = enlargedProgressColor
         control.addTarget(coordinator, action: #selector(Coordinator.handleValueChange(control:)), for: .valueChanged)
+        control.setContentHuggingPriority(.defaultHigh, for: .vertical)
         return control
     }
 
