@@ -12,14 +12,14 @@ public struct SliderControlView: UIViewRepresentable {
     public typealias UIViewType = SliderControl
 
     public class Coordinator: NSObject {
-        var parent: SliderControlView
+        @Binding private var value: Float
 
-        init(parent: SliderControlView) {
-            self.parent = parent
+        init(value: Binding<Float>) {
+            _value = value
         }
 
         @objc func handleValueChange(control: SliderControl) {
-            parent.value = control.value
+            value = control.value
         }
     }
 
@@ -31,14 +31,13 @@ public struct SliderControlView: UIViewRepresentable {
 
     public func makeUIView(context: Context) -> SliderControl {
         let coordinator = context.coordinator
-
         let control = SliderControl()
         control.addTarget(coordinator, action: #selector(Coordinator.handleValueChange(control:)), for: .valueChanged)
         return control
     }
 
     public func makeCoordinator() -> Coordinator {
-        Coordinator(parent: self)
+        Coordinator(value: $value)
     }
 
     public func updateUIView(_ uiView: SliderControl, context: Context) {
