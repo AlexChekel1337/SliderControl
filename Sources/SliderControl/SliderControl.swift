@@ -16,13 +16,10 @@ open class SliderControl: UIControl {
     public var isContinuous: Bool = true
     /// A layout guide that follows track size changes in different states.
     public let trackLayoutGuide: UILayoutGuide = .init()
-    /// Indicates whether slider should provide haptic feedback upon reaching minimum or maximum values.
-    /// Default value of this property is `true`.
-    open var providesHapticFeedback: Bool = true
     /// Feedback generator used to provide haptic feedback when slider reaches minimum or maximum value.
-    /// Default value of this property is `UIImpactFeedbackGenerator(style: .light)`.
-    open private(set) var feedbackGenerator: UIFeedbackGenerator = UIImpactFeedbackGenerator(style: .light)
-
+    /// Set this property to `nil` to disable haptic feedback. Default value of this property is
+    /// `ImpactFeedbackGenerator`.
+    public var feedbackGenerator: (any SliderFeedbackGenerator)? = ImpactSliderFeedbackGenerator()
     /// A color set to track when user is not interacting with the slider.
     /// Default value of this property is `secondarySystemFill`.
     open var defaultTrackColor: UIColor = .secondarySystemFill {
@@ -111,6 +108,7 @@ open class SliderControl: UIControl {
         super.touchesBegan(touches, with: event)
 
         enlargeTrack()
+        feedbackGenerator?.preapre()
     }
 
     public override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -130,9 +128,9 @@ open class SliderControl: UIControl {
             if newProgress != progress {
                 switch newProgress {
                     case 0:
-                        provideHapticFeedbackForMinimumValue()
+                        feedbackGenerator?.generateMinimumValueFeedback()
                     case 1:
-                        provideHapticFeedbackForMaximumValue()
+                        feedbackGenerator?.generateMaximumValueFeedback()
                     default:
                         break
                 }
@@ -207,26 +205,6 @@ open class SliderControl: UIControl {
         ])
 
         addTarget(self, action: #selector(broadcastValueChange), for: .valueChanged)
-    }
-
-    /// The control calls this method upon reaching minimum value. Override this
-    /// implementation to customize haptic feedback. Your implementation should
-    /// not call `super.provideHapticFeedbackForMinimumValue()` at any point.
-    /// You should not call this method directly.
-    open func provideHapticFeedbackForMinimumValue() {
-        guard providesHapticFeedback else { return }
-
-        (feedbackGenerator as? UIImpactFeedbackGenerator)?.impactOccurred(intensity: 0.75)
-    }
-
-    /// The control calls this method upon reaching maximum value. Override this
-    /// implementation to customize haptic feedback. Your implementation should
-    /// not call `super.provideHapticFeedbackForMaximumValue()` at any point.
-    /// You should not call this method directly.
-    open func provideHapticFeedbackForMaximumValue() {
-        guard providesHapticFeedback else { return }
-
-        (feedbackGenerator as? UIImpactFeedbackGenerator)?.impactOccurred(intensity: 1)
     }
 
     private func enlargeTrack() {
