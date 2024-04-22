@@ -6,6 +6,7 @@
 // Copyright © 2023 Alexander Chekel. All rights reserved.
 //
 
+import Combine
 import UIKit
 
 /// Implements a slider control similar to one found in Apple Music on iOS 16.
@@ -67,7 +68,9 @@ open class SliderControl: UIControl {
 
     /// A publisher that emits progress updates when user interacts with the slider.
     /// A Combine alternative to adding action for `UIControl.Event.valueChanged`.
-    public private(set) lazy var valuePublisher: SliderControlValuePublisher = .init(control: self)
+    public var valuePublisher: AnyPublisher<Float, Never> {
+        valueSubject.eraseToAnyPublisher()
+    }
 
     public override var intrinsicContentSize: CGSize {
         return CGSize(width: UIView.noIntrinsicMetric, height: Self.intrinsicHeight)
@@ -79,6 +82,8 @@ open class SliderControl: UIControl {
 
     private let trackView: UIView = .init()
     private let progressView: UIView = .init()
+
+    private let valueSubject: PassthroughSubject<Float, Never> = .init()
 
     private var heightConstraint: NSLayoutConstraint = .init()
     private var progressConstraint: NSLayoutConstraint = .init()
@@ -200,6 +205,8 @@ open class SliderControl: UIControl {
             progressView.leadingAnchor.constraint(equalTo: trackView.leadingAnchor),
             progressView.bottomAnchor.constraint(equalTo: trackView.bottomAnchor)
         ])
+
+        addTarget(self, action: #selector(broadcastValueChange), for: .valueChanged)
     }
 
     /// The control calls this method upon reaching minimum value. Override this
@@ -266,5 +273,9 @@ open class SliderControl: UIControl {
             enlargedTrackColor.map { trackView.backgroundColor = $0 }
             enlargedProgressColor.map { progressView.backgroundColor = $0 }
         }
+    }
+
+    @objc private func broadcastValueChange() {
+        valueSubject.send(value)
     }
 }
