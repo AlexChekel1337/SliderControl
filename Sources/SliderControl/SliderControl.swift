@@ -57,6 +57,8 @@ open class SliderControl: UIControl {
             return Float(progressView.bounds.width / trackView.bounds.width)
         }
         set {
+            guard !isTracking else { return }
+
             let normalizedValue = max(0.0001, min(1, newValue))
             let cgFloatValue = CGFloat(normalizedValue)
             progressConstraint = progressConstraint.constraintWithMultiplier(cgFloatValue)
@@ -104,51 +106,47 @@ open class SliderControl: UIControl {
         trackView.layer.cornerRadius = trackView.bounds.height / 2
     }
 
-    override public func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        super.touchesBegan(touches, with: event)
-
+    public override func beginTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
         enlargeTrack()
         feedbackGenerator?.preapre()
+
+        return true
     }
 
-    public override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        super.touchesMoved(touches, with: event)
+    public override func continueTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
+        let previousLocation = touch.previousLocation(in: self)
+        let location = touch.location(in: self)
+        let translationX = location.x - previousLocation.x
+        let newWidth = effectiveUserInterfaceLayoutDirection == .leftToRight
+            ? progressView.bounds.width + translationX
+            : progressView.bounds.width - translationX
 
-        if let touch = touches.first {
-            let previousLocation = touch.previousLocation(in: self)
-            let location = touch.location(in: self)
-            let translationX = location.x - previousLocation.x
-            let newWidth = effectiveUserInterfaceLayoutDirection == .leftToRight
-                ? progressView.bounds.width + translationX
-                : progressView.bounds.width - translationX
+        let progress = progressView.bounds.width / trackView.bounds.width
+        let newProgress = max(0, min(1, newWidth / trackView.bounds.width))
 
-            let progress = progressView.bounds.width / trackView.bounds.width
-            let newProgress = max(0, min(1, newWidth / trackView.bounds.width))
-
-            if newProgress != progress {
-                switch newProgress {
-                    case 0:
-                        feedbackGenerator?.generateMinimumValueFeedback()
-                    case 1:
-                        feedbackGenerator?.generateMaximumValueFeedback()
-                    default:
-                        break
-                }
-            }
-
-            let normalizedConstraintMultiplier = max(0.0001, min(1, newProgress))
-            progressConstraint = progressConstraint.constraintWithMultiplier(normalizedConstraintMultiplier)
-
-            hasPreviousSessionChangedProgress = true
-            if isContinuous {
-                sendActions(for: .valueChanged)
+        if newProgress != progress {
+            switch newProgress {
+                case 0:
+                    feedbackGenerator?.generateMinimumValueFeedback()
+                case 1:
+                    feedbackGenerator?.generateMaximumValueFeedback()
+                default:
+                    break
             }
         }
+
+        let normalizedConstraintMultiplier = max(0.0001, min(1, newProgress))
+        progressConstraint = progressConstraint.constraintWithMultiplier(normalizedConstraintMultiplier)
+
+        hasPreviousSessionChangedProgress = true
+        if isContinuous {
+            sendActions(for: .valueChanged)
+        }
+
+        return true
     }
 
-    override public func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        super.touchesEnded(touches, with: event)
-
+    public override func endTracking(_ touch: UITouch?, with event: UIEvent?) {
         reduceTrack()
 
         if hasPreviousSessionChangedProgress {
@@ -157,9 +155,7 @@ open class SliderControl: UIControl {
         }
     }
 
-    public override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        super.touchesCancelled(touches, with: event)
-
+    public override func cancelTracking(with event: UIEvent?) {
         reduceTrack()
 
         if hasPreviousSessionChangedProgress {
@@ -172,6 +168,7 @@ open class SliderControl: UIControl {
         isMultipleTouchEnabled = false
         backgroundColor = .clear
 
+        trackView.isUserInteractionEnabled = false
         trackView.clipsToBounds = true
         trackView.backgroundColor = defaultTrackColor
         trackView.translatesAutoresizingMaskIntoConstraints = false
@@ -179,6 +176,7 @@ open class SliderControl: UIControl {
 
         addLayoutGuide(trackLayoutGuide)
 
+        progressView.isUserInteractionEnabled = false
         progressView.clipsToBounds = true
         progressView.backgroundColor = defaultProgressColor
         progressView.translatesAutoresizingMaskIntoConstraints = false
