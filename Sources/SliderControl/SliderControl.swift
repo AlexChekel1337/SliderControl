@@ -65,6 +65,11 @@ open class SliderControl: UIControl {
         }
     }
 
+    /// Callback for editing changed event. It is called with `true` parameter
+    /// when user starts dragging the slider, and then it is called again with
+    /// `false` parameter when users lets go of the slider.
+    public var onEditingChanged: ((Bool) -> Void)?
+
     /// A publisher that emits progress updates when user interacts with the slider.
     /// A Combine alternative to adding action for `UIControl.Event.valueChanged`.
     public var valuePublisher: AnyPublisher<Float, Never> {
@@ -107,6 +112,7 @@ open class SliderControl: UIControl {
     }
 
     public override func beginTracking(_ touch: UITouch, with event: UIEvent?) -> Bool {
+        onEditingChanged?(true)
         enlargeTrack()
         feedbackGenerator?.preapre()
 
@@ -153,6 +159,8 @@ open class SliderControl: UIControl {
             hasPreviousSessionChangedProgress = false
             sendActions(for: .valueChanged)
         }
+
+        onEditingChanged?(false)
     }
 
     public override func cancelTracking(with event: UIEvent?) {
@@ -162,6 +170,8 @@ open class SliderControl: UIControl {
             hasPreviousSessionChangedProgress = false
             sendActions(for: .valueChanged)
         }
+
+        onEditingChanged?(false)
     }
 
     private func setup() {

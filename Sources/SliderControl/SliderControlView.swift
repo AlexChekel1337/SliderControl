@@ -31,13 +31,16 @@ public struct SliderControlView: UIViewRepresentable {
     var defaultProgressColor: UIColor
     var enlargedTrackColor: UIColor?
     var enlargedProgressColor: UIColor?
+    var onEditingChanged: ((Bool) -> Void)?
 
     /// Creates a slider similar to the track slider found in Apple Music on iOS 16.
     /// - parameters:
     ///     - value: Selected slider value binding.
-    ///     - providesHapticFeedback: Determines whether `SliderControlView` should provide haptic feedback
-    ///                               upon reaching minimum or maximum values.
-    public init(value: Binding<Float>, providesHapticFeedback: Bool = true) {
+    ///     - onEditingChanged: A callback for when editing begins or ends.
+    public init(
+        value: Binding<Float>,
+        onEditingChanged: ((Bool) -> Void)? = nil
+    ) {
         self._value = value
         self.isContinuous = true
         self.feedbackGenerator = ImpactSliderFeedbackGenerator()
@@ -45,6 +48,7 @@ public struct SliderControlView: UIViewRepresentable {
         self.defaultProgressColor = .systemFill
         self.enlargedTrackColor = nil
         self.enlargedProgressColor = nil
+        self.onEditingChanged = onEditingChanged
     }
 
     public func makeUIView(context: Context) -> SliderControl {
@@ -56,6 +60,7 @@ public struct SliderControlView: UIViewRepresentable {
         control.defaultProgressColor = defaultProgressColor
         control.enlargedTrackColor = enlargedTrackColor
         control.enlargedProgressColor = enlargedProgressColor
+        control.onEditingChanged = onEditingChanged
         control.addTarget(coordinator, action: #selector(Coordinator.handleValueChange(control:)), for: .valueChanged)
         control.setContentHuggingPriority(.defaultHigh, for: .vertical)
         return control
