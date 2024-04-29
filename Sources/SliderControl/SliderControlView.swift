@@ -25,6 +25,7 @@ public struct SliderControlView: UIViewRepresentable {
 
     @Binding var value: Float
 
+    var isContinuous: Bool
     var feedbackGenerator: (any SliderFeedbackGenerator)?
     var defaultTrackColor: UIColor
     var defaultProgressColor: UIColor
@@ -38,6 +39,7 @@ public struct SliderControlView: UIViewRepresentable {
     ///                               upon reaching minimum or maximum values.
     public init(value: Binding<Float>, providesHapticFeedback: Bool = true) {
         self._value = value
+        self.isContinuous = true
         self.feedbackGenerator = ImpactSliderFeedbackGenerator()
         self.defaultTrackColor = .secondarySystemFill
         self.defaultProgressColor = .systemFill
@@ -48,6 +50,7 @@ public struct SliderControlView: UIViewRepresentable {
     public func makeUIView(context: Context) -> SliderControl {
         let coordinator = context.coordinator
         let control = SliderControl()
+        control.isContinuous = isContinuous
         control.feedbackGenerator = feedbackGenerator
         control.defaultTrackColor = defaultTrackColor
         control.defaultProgressColor = defaultProgressColor
@@ -71,6 +74,7 @@ public struct SliderControlView: UIViewRepresentable {
             uiView.value = value
         }
 
+        uiView.isContinuous = isContinuous
         uiView.feedbackGenerator = feedbackGenerator
         uiView.defaultTrackColor = defaultTrackColor
         uiView.defaultProgressColor = defaultProgressColor
@@ -135,6 +139,15 @@ public extension SliderControlView {
         var view = self
         view.defaultProgressColor = UIColor(defaultProgressColor)
         view.enlargedProgressColor = enlargedProgressColor.map(UIColor.init)
+        return view
+    }
+
+    /// Specifies whether slider should continuously update the value binding.
+    /// If set to `true`, the slider will update the value binding as user drags across.
+    /// If set to `false`, the value binding will be updated when user lets go of the slider.
+    func continuouslyUpdatesValue(_ isContinuous: Bool) -> SliderControlView {
+        var view = self
+        view.isContinuous = isContinuous
         return view
     }
 
