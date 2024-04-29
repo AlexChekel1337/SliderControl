@@ -59,9 +59,8 @@ open class SliderControl: UIControl {
         set {
             guard !isTracking else { return }
 
-            let normalizedValue = max(0.0001, min(1, newValue))
-            let cgFloatValue = CGFloat(normalizedValue)
-            progressConstraint = progressConstraint.constraintWithMultiplier(cgFloatValue)
+            let multiplier = CGFloat(newValue)
+            progressConstraint = progressConstraint.constraintWithMultiplier(multiplier)
         }
     }
 
@@ -141,8 +140,7 @@ open class SliderControl: UIControl {
             }
         }
 
-        let normalizedConstraintMultiplier = max(0.0001, min(1, newProgress))
-        progressConstraint = progressConstraint.constraintWithMultiplier(normalizedConstraintMultiplier)
+        progressConstraint = progressConstraint.constraintWithMultiplier(newProgress)
 
         hasPreviousSessionChangedProgress = true
         if isContinuous {
