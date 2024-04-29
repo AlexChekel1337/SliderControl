@@ -51,16 +51,21 @@ open class SliderControl: UIControl {
         }
     }
 
-    /// The slider's current value. Ranges between `0.0` and `1.0`.
+    /// Range of slider values. Default value is `0...1`.
+    public var valueRange: ClosedRange<Float> = 0...1
+
+    /// The slider's current value in range set by `valueRange` property.
     public var value: Float {
         get {
-            return Float(progressView.bounds.width / trackView.bounds.width)
+            let progress = Float(progressView.bounds.width / trackView.bounds.width)
+            return Self.internalValueRange.convert(value: progress, to: valueRange)
         }
         set {
             guard !isTracking else { return }
 
-            let multiplier = CGFloat(newValue)
-            progressConstraint = progressConstraint.constraintWithMultiplier(multiplier)
+            let clampedValue = max(valueRange.lowerBound, min(valueRange.upperBound, newValue))
+            let convertedValue = valueRange.convert(value: clampedValue, to: Self.internalValueRange)
+            progressConstraint = progressConstraint.constraintWithMultiplier(CGFloat(convertedValue))
         }
     }
 
@@ -82,6 +87,7 @@ open class SliderControl: UIControl {
     private static let intrinsicHeight: CGFloat = 24
     private static let defaultTrackHeight: CGFloat = 7
     private static let enlargedTrackHeight: CGFloat = 12
+    private static let internalValueRange: ClosedRange<Float> = 0...1
 
     private let trackView: UIView = .init()
     private let progressView: UIView = .init()
