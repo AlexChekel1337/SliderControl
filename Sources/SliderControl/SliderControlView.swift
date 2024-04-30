@@ -8,69 +8,89 @@
 
 import SwiftUI
 
-public struct SliderControlView: UIViewRepresentable {
+public struct SliderControlView<T: BinaryFloatingPoint>: UIViewRepresentable {
     public typealias UIViewType = SliderControl
 
-    public class Coordinator: NSObject {
-        @Binding private var value: Float
+    public class Coordinator<U: BinaryFloatingPoint>: NSObject {
+        @Binding private var value: U
 
-        init(value: Binding<Float>) {
+        init(value: Binding<U>) {
             _value = value
         }
 
+        func setup(with control: SliderControl) {
+            control.addTarget(self, action: #selector(handleValueChange(control:)), for: .valueChanged)
+        }
+
         @objc func handleValueChange(control: SliderControl) {
-            value = control.value
+            value = U(control.value)
         }
     }
 
-    @Binding var value: Float
+    @Binding var value: T
 
+    var isContinuous: Bool
     var feedbackGenerator: (any SliderFeedbackGenerator)?
     var defaultTrackColor: UIColor
     var defaultProgressColor: UIColor
     var enlargedTrackColor: UIColor?
     var enlargedProgressColor: UIColor?
+    var onEditingChanged: ((Bool) -> Void)?
+    var valueRange: ClosedRange<T>
 
     /// Creates a slider similar to the track slider found in Apple Music on iOS 16.
     /// - parameters:
     ///     - value: Selected slider value binding.
-    ///     - providesHapticFeedback: Determines whether `SliderControlView` should provide haptic feedback
-    ///                               upon reaching minimum or maximum values.
-    public init(value: Binding<Float>, providesHapticFeedback: Bool = true) {
+    ///     - valueRange: A range of valid slider values.
+    ///     - onEditingChanged: A callback for when editing begins or ends.
+    public init(
+        value: Binding<T>,
+        in valueRange: ClosedRange<T> = 0...1,
+        onEditingChanged: ((Bool) -> Void)? = nil
+    ) {
         self._value = value
+        self.isContinuous = true
         self.feedbackGenerator = ImpactSliderFeedbackGenerator()
         self.defaultTrackColor = .secondarySystemFill
         self.defaultProgressColor = .systemFill
         self.enlargedTrackColor = nil
         self.enlargedProgressColor = nil
+        self.onEditingChanged = onEditingChanged
+        self.valueRange = valueRange
     }
 
     public func makeUIView(context: Context) -> SliderControl {
         let coordinator = context.coordinator
         let control = SliderControl()
+        control.isContinuous = isContinuous
         control.feedbackGenerator = feedbackGenerator
         control.defaultTrackColor = defaultTrackColor
         control.defaultProgressColor = defaultProgressColor
         control.enlargedTrackColor = enlargedTrackColor
         control.enlargedProgressColor = enlargedProgressColor
-        control.addTarget(coordinator, action: #selector(Coordinator.handleValueChange(control:)), for: .valueChanged)
+        control.onEditingChanged = onEditingChanged
+        control.valueRange = Float(valueRange.lowerBound)...Float(valueRange.upperBound)
         control.setContentHuggingPriority(.defaultHigh, for: .vertical)
+        coordinator.setup(with: control)
         return control
     }
 
-    public func makeCoordinator() -> Coordinator {
+    public func makeCoordinator() -> Coordinator<T> {
         Coordinator(value: $value)
     }
 
     public func updateUIView(_ uiView: SliderControl, context: Context) {
-        if value != uiView.value {
+        let floatValue = Float(value)
+
+        if floatValue != uiView.value {
             // When the UIView updates the binding, SwiftUI calls the
             // updateUIView(_:context:) method again, which may cause
             // a CPU usage spike, or, as in case of this view,
             // a drawing issue.
-            uiView.value = value
+            uiView.value = floatValue
         }
 
+        uiView.isContinuous = isContinuous
         uiView.feedbackGenerator = feedbackGenerator
         uiView.defaultTrackColor = defaultTrackColor
         uiView.defaultProgressColor = defaultProgressColor
@@ -135,6 +155,15 @@ public extension SliderControlView {
         var view = self
         view.defaultProgressColor = UIColor(defaultProgressColor)
         view.enlargedProgressColor = enlargedProgressColor.map(UIColor.init)
+        return view
+    }
+
+    /// Specifies whether slider should continuously update the value binding.
+    /// If set to `true`, the slider will update the value binding as user drags across.
+    /// If set to `false`, the value binding will be updated when user lets go of the slider.
+    func continuouslyUpdatesValue(_ isContinuous: Bool) -> SliderControlView {
+        var view = self
+        view.isContinuous = isContinuous
         return view
     }
 

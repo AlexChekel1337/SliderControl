@@ -10,6 +10,8 @@ import UIKit
 
 extension NSLayoutConstraint {
     func constraintWithMultiplier(_ newMultiplier: CGFloat) -> NSLayoutConstraint {
+        let normalizedMultiplier = max(0.0001, min(1, newMultiplier))
+
         let shouldActivate = isActive
         if shouldActivate {
             NSLayoutConstraint.deactivate([self])
@@ -21,7 +23,7 @@ extension NSLayoutConstraint {
             relatedBy: relation,
             toItem: secondItem,
             attribute: secondAttribute,
-            multiplier: newMultiplier,
+            multiplier: normalizedMultiplier,
             constant: constant
         )
         updatedConstraint.priority = priority
