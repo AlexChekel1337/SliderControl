@@ -11,6 +11,8 @@ let package = Package(
         .library(name: "SliderControl", targets: ["SliderControl"])
     ],
     targets: [
-        .target(name: "SliderControl", dependencies: [])
+        .target(name: "SliderControl", dependencies: []),
+
+        .testTarget(name: "SliderControlExtensionsTests", dependencies: ["SliderControl"]),
     ]
 )
