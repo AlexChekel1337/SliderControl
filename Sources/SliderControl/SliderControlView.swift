@@ -8,13 +8,13 @@
 
 import SwiftUI
 
-public struct SliderControlView<V: BinaryFloatingPoint>: UIViewRepresentable {
+public struct SliderControlView<T: BinaryFloatingPoint>: UIViewRepresentable {
     public typealias UIViewType = SliderControl
 
-    public class Coordinator<V: BinaryFloatingPoint>: NSObject {
-        @Binding private var value: V
+    public class Coordinator<U: BinaryFloatingPoint>: NSObject {
+        @Binding private var value: U
 
-        init(value: Binding<V>) {
+        init(value: Binding<U>) {
             _value = value
         }
 
@@ -23,11 +23,11 @@ public struct SliderControlView<V: BinaryFloatingPoint>: UIViewRepresentable {
         }
 
         @objc func handleValueChange(control: SliderControl) {
-            value = V(control.value)
+            value = U(control.value)
         }
     }
 
-    @Binding var value: V
+    @Binding var value: T
 
     var isContinuous: Bool
     var feedbackGenerator: (any SliderFeedbackGenerator)?
@@ -36,15 +36,15 @@ public struct SliderControlView<V: BinaryFloatingPoint>: UIViewRepresentable {
     var enlargedTrackColor: UIColor?
     var enlargedProgressColor: UIColor?
     var onEditingChanged: ((Bool) -> Void)?
-    var valueRange: ClosedRange<V>
+    var valueRange: ClosedRange<T>
 
     /// Creates a slider similar to the track slider found in Apple Music on iOS 16.
     /// - parameters:
     ///     - value: Selected slider value binding.
     ///     - onEditingChanged: A callback for when editing begins or ends.
     public init(
-        value: Binding<V>,
-        in valueRange: ClosedRange<V> = 0...1,
+        value: Binding<T>,
+        in valueRange: ClosedRange<T> = 0...1,
         onEditingChanged: ((Bool) -> Void)? = nil
     ) {
         self._value = value
@@ -74,7 +74,7 @@ public struct SliderControlView<V: BinaryFloatingPoint>: UIViewRepresentable {
         return control
     }
 
-    public func makeCoordinator() -> Coordinator<V> {
+    public func makeCoordinator() -> Coordinator<T> {
         Coordinator(value: $value)
     }
 
