@@ -8,22 +8,26 @@
 
 import SwiftUI
 
-public struct SliderControlView: UIViewRepresentable {
+public struct SliderControlView<V: BinaryFloatingPoint>: UIViewRepresentable {
     public typealias UIViewType = SliderControl
 
-    public class Coordinator: NSObject {
-        @Binding private var value: Float
+    public class Coordinator<V: BinaryFloatingPoint>: NSObject {
+        @Binding private var value: V
 
-        init(value: Binding<Float>) {
+        init(value: Binding<V>) {
             _value = value
         }
 
+        func setup(with control: SliderControl) {
+            control.addTarget(self, action: #selector(handleValueChange(control:)), for: .valueChanged)
+        }
+
         @objc func handleValueChange(control: SliderControl) {
-            value = control.value
+            value = V(control.value)
         }
     }
 
-    @Binding var value: Float
+    @Binding var value: V
 
     var isContinuous: Bool
     var feedbackGenerator: (any SliderFeedbackGenerator)?
@@ -32,15 +36,15 @@ public struct SliderControlView: UIViewRepresentable {
     var enlargedTrackColor: UIColor?
     var enlargedProgressColor: UIColor?
     var onEditingChanged: ((Bool) -> Void)?
-    var valueRange: ClosedRange<Float>
+    var valueRange: ClosedRange<V>
 
     /// Creates a slider similar to the track slider found in Apple Music on iOS 16.
     /// - parameters:
     ///     - value: Selected slider value binding.
     ///     - onEditingChanged: A callback for when editing begins or ends.
     public init(
-        value: Binding<Float>,
-        in valueRange: ClosedRange<Float> = 0...1,
+        value: Binding<V>,
+        in valueRange: ClosedRange<V> = 0...1,
         onEditingChanged: ((Bool) -> Void)? = nil
     ) {
         self._value = value
@@ -64,23 +68,25 @@ public struct SliderControlView: UIViewRepresentable {
         control.enlargedTrackColor = enlargedTrackColor
         control.enlargedProgressColor = enlargedProgressColor
         control.onEditingChanged = onEditingChanged
-        control.valueRange = valueRange
-        control.addTarget(coordinator, action: #selector(Coordinator.handleValueChange(control:)), for: .valueChanged)
+        control.valueRange = Float(valueRange.lowerBound)...Float(valueRange.upperBound)
         control.setContentHuggingPriority(.defaultHigh, for: .vertical)
+        coordinator.setup(with: control)
         return control
     }
 
-    public func makeCoordinator() -> Coordinator {
+    public func makeCoordinator() -> Coordinator<V> {
         Coordinator(value: $value)
     }
 
     public func updateUIView(_ uiView: SliderControl, context: Context) {
-        if value != uiView.value {
+        let floatValue = Float(value)
+
+        if floatValue != uiView.value {
             // When the UIView updates the binding, SwiftUI calls the
             // updateUIView(_:context:) method again, which may cause
             // a CPU usage spike, or, as in case of this view,
             // a drawing issue.
-            uiView.value = value
+            uiView.value = floatValue
         }
 
         uiView.isContinuous = isContinuous
