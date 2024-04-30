@@ -109,6 +109,46 @@ SliderControlView(value: $value)
 
 This control provides its own implementation of feedback generator, so if you want to reset this behavior, use `ImpactFeedbackGenerator()` with `feedbackGenerator` property and SwiftUI modifier.
 
+#### Value range
+
+Just like the built-in slider, `SliderControl` also supports value ranges. To specify valid value range just change the `valueRange` property or pass it the initializer of `SliderControlView`.
+
+UIKit:
+```swift
+sliderControl.valueRange = 0...178
+```
+
+SwiftUI:
+```swift
+SliderControlView(value: $sliderValue, in: 0...178)
+```
+
+#### Callbacks
+
+- `onEditingChanged` - Fired when user starts dragging the slider, and then fired again when users lets go of the slider;
+
+UIKit:
+```swift
+sliderControl.onEditingChanged = { isEditing in
+    if isEditing {
+        // dragging began
+    } else {
+        // dragging ended
+    }
+}
+```
+
+SwiftUI:
+```swift
+SliderControlView(value: $sliderValue) { isEditing in
+    if isEditing {
+        // dragging began
+    } else {
+        // dragging ended
+    }
+}
+```
+
 ## RTL Support
 
 `SliderControl` and its SwiftUI wrapper `SliderControlView` support right-to-left languages.

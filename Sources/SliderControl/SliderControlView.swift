@@ -41,6 +41,7 @@ public struct SliderControlView<T: BinaryFloatingPoint>: UIViewRepresentable {
     /// Creates a slider similar to the track slider found in Apple Music on iOS 16.
     /// - parameters:
     ///     - value: Selected slider value binding.
+    ///     - valueRange: A range of valid slider values.
     ///     - onEditingChanged: A callback for when editing begins or ends.
     public init(
         value: Binding<T>,
